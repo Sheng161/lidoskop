@@ -1,0 +1,7 @@
+"use client";
+import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
+import { api } from "@/lib/api";
+import { Badge, EmptyState, ErrorBox, Loading, PageHeader } from "@/components/ui";
+type Person={id:string;company_id:string;full_name:string;status:string;confidence:number;positions:string[];contacts:{kind:string;value:string;origin:string}[]};
+export default function PeoplePage(){const q=useQuery({queryKey:["people"],queryFn:()=>api<Person[]>("/people")});return <><PageHeader eyebrow="Лица, принимающие решения" title="ЛПР" description="Роли, связь с компанией, рабочие контакты и уровень подтверждения."/>{q.isLoading?<Loading/>:q.error?<ErrorBox message={q.error.message}/>:!q.data?.length?<EmptyState title="ЛПР пока не найдены" text="Лидоскоп не показывает вымышленных людей. Записи появятся только с доказательствами."/>:<div className="table-wrap"><table className="table"><thead><tr><th>Человек</th><th>Должность</th><th>Подтверждение</th><th>Контакты</th><th>Компания</th></tr></thead><tbody>{q.data.map(p=><tr key={p.id}><td className="name">{p.full_name}</td><td>{p.positions.join(", ")||"—"}</td><td><Badge value={p.status}/><div className="muted">{p.confidence}%</div></td><td>{p.contacts.length?p.contacts.map(c=><div key={c.value}>{c.value}<div className="muted">{c.origin}</div></div>):<span className="muted">Не опубликованы</span>}</td><td><Link className="resource-link" href={`/companies/${p.company_id}`}>Карточка</Link></td></tr>)}</tbody></table></div>}</>}
